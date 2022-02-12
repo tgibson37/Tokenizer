@@ -4,19 +4,23 @@ public class Token {
 	public static final int ALPHA = 1000;
 	public static final int NUM = 2000;
 // returns number of tokens
-	public static int tokenize(String line, String[] tokens, int TOKLEN) {
+	public static List<String> tokenize(String line) {
 		int nxtTok;
 		int tlen = line.length();
 		int cursor = 0;
 		int first,last;
-		for(nxtTok=0; nxtTok<TOKLEN && cursor<tlen-1; ++nxtTok) {
+		ArrayList<String> tokens = new ArrayList<String>();
+		while(cursor<tlen-1) {
 			first = cursor;
 			last = getTokLast(line,first);
-			String token = line.substring(first,last+1);
-			tokens[nxtTok] = token;
-			cursor = skip(line,last+1,' ',tlen);
+			if(last>=first) {
+				String token = line.substring(first,last);
+				tokens.add(token);
+				cursor = skip(line,last+1,' ',tlen);
+			}
+			else return tokens;
 		}
-		return nxtTok;
+		return tokens;
 	}
 	
 	private static int skip(String line, int cursor, char separator, int tlen){
@@ -25,13 +29,13 @@ public class Token {
 	}
 	
 	private static int getTokLast(String line, int first) {
-		int last = first;
+		int last = first+1;   // have at least one already
 		int tlen = line.length();
 		int type = setType(line.charAt(first));
-		do {
-			if( isOfType(line.charAt(last+1),type) ) ++last;   // include this char
+		while(last < tlen) {
+			if( isOfType(line.charAt(last),type) ) ++last;   // include this char
 			else break;                                     // no, done
-		} while(last < tlen-1);   // limit test, stop before last char..
+		} 
 		return last;
 	}
 
@@ -58,8 +62,9 @@ public class Token {
 		int TOKLEN = 10;
 		String tok[] = new String[TOKLEN];
 		String dothis = "foo 30 bar";
-		int toklen = tokenize(dothis,tok,TOKLEN);
+		List<String> tokens = tokenize(dothis);
 		System.out.println(dothis);
-		for(int i=0; i<toklen; ++i) System.out.println(tok[i]);
+		int toklen = tokens.size();
+		for(int i=0; i<toklen; ++i) System.out.println(tokens.get(i));
 	}
 }
