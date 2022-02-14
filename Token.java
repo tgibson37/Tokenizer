@@ -11,6 +11,7 @@ public class Token {
 //find a better way
 		types.add(new Number());
 		types.add(new Symbol());
+		types.add(new Comment1());
 		this.line = line;
 		len = line.length();
 	}
@@ -37,7 +38,7 @@ public class Token {
 		return Character.isWhitespace(line.charAt(cursor)); 
 	}
 	public static void main(String args[]){
-		String dothis = "  foo 30    bar X17 \n More   \n   ";
+		String dothis = "  foo 30    bar X17  More     /*foo*/ ";
 		System.out.println("=>>"+dothis+"<<=");
 		Token t = new Token(dothis);
 		List<String> tokens = t.tokenize();
@@ -77,6 +78,32 @@ public class Token {
 			return text.substring(first,last);
 		}
 	}
+
+	private class Comment1 extends TokType{
+		boolean yours(String text, int first){
+			String tok = text.substring(first,first+2); 
+			return tok.equals("/*");
+		}
+		String token(String text, int first) {
+			int last=first+2;  // 2 chars matched so far
+			last=search(last,"*/");
+			return text.substring(first,last+2);
+		}
+	}
+//handy tool for inner classes
+	int search(int from, String end){
+		int eln = end.length();
+		while(from+eln < len){
+			if(end.equals(line.substring(from,from+eln)))break;
+			++from;
+		}
+		return from+eln-1;
+	}
+/*
+		for(int i=from; i+ln<len; ++i){
+			if end.equals(line.substring(i,i+ln))break;
+		}
+*/
 /*
 PROTOTYPE (These are inner classes):
 	private class <tokname> extends TokType{
@@ -95,3 +122,4 @@ PROTOTYPE (These are inner classes):
 AND: visit line 12 and add to types list. Order may be important.
 */
 }
+//System.err.print(" ~23 "+cursor+" "+line.substring(cursor,len));
