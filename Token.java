@@ -1,5 +1,7 @@
 import java.util.*;
 public class Token {
+	boolean asfound = true;
+	boolean trace   = false;
 	public static final int SYM = 1000;
 	public static final int NUM = 2000;
 	private String line;
@@ -8,51 +10,64 @@ public class Token {
 	private ArrayList<TokType> types = new ArrayList<TokType>();
 
 	public Token(String line){
-//find a better way
+//a better way: Class.getClasses() returns array of public inner classes
 		types.add(new Number());
 		types.add(new Symbol());
 		types.add(new Comment1());
+		types.add(new Unknown());
 		this.line = line;
 		len = line.length();
+	}
+	private boolean isWhite() {
+		if(cursor>=len)return false;
+		return Character.isWhitespace(line.charAt(cursor));
 	}
 	public List<String> tokenize() {
 		cursor=0;
 		String tok;
 		ArrayList<String> tokens = new ArrayList<String>();
 		while(cursor<len-1){
+			if(trace)System.err.println("~29 "+cursor);
 			Iterator<TokType> typit = types.iterator();
 			while(cursor<len-1 && isWhite())++cursor;
+			if(cursor>=len-1){
+				if(trace||asfound)System.out.println("Done");
+				break;
+			}
 			while(typit.hasNext()){
+				if(trace)System.err.println("  ~33 "+cursor);
 				TokType tt = typit.next();
 				if(tt.yours(line,cursor)){
 					tok=tt.token(line,cursor);
 					cursor += tok.length();
 					tokens.add(tok);
+					if(asfound)System.out.println("Found =>"+tok+"<=");
+					break;
 				}
 			}
 		}
 		return tokens;
 	}
-	private boolean isWhite() {
-		if(cursor>=len)return false;
-		return Character.isWhitespace(line.charAt(cursor)); 
-	}
 	public static void main(String args[]){
-		String dothis = "  foo 30    bar X17  More     /*foo*/ ";
+		String dothis = "  foo 30  bar X17  More  /* foo bar */  vudo some  ";
+//		String dothis = "  foo 30  bar X17  More  // foo bar   vudo some  ";
+//		String dothis = "    // foo bar   vudo some  ";
+		//               012345678901234567890123456789
 		System.out.println("=>>"+dothis+"<<=");
+		System.out.println("   01234567890123456789012345678901234567890123456789");
+		System.out.println("             1         2         3         4");
 		Token t = new Token(dothis);
 		List<String> tokens = t.tokenize();
 		int toklen = tokens.size();
-		System.out.println("toklen = "+toklen);
+		System.out.println(toklen+" tokens...");
 		for(int i=0; i<toklen; ++i) System.out.println(tokens.get(i));
 	}
-	
 	private abstract class TokType{
 		abstract boolean yours(String text, int first);
 		abstract String token(String text, int first);
 	}
-// Token Types
-	private class Number extends TokType{
+/******************** Token Types ******************/
+	public class Number extends TokType{
 		boolean yours(String text, int first){
 			char x = text.charAt(first);
 			return Character.isDigit(x);
@@ -65,7 +80,7 @@ public class Token {
 			return text.substring(first,last);
 		}
 	}
-	private class Symbol extends TokType{
+	public class Symbol extends TokType{
 		boolean yours(String text, int first){
 			char x = text.charAt(first);
 			return Character.isLetter(x);
@@ -79,8 +94,9 @@ public class Token {
 		}
 	}
 
-	private class Comment1 extends TokType{
+	public class Comment1 extends TokType{
 		boolean yours(String text, int first){
+			if(first+1 >= len)return false;
 			String tok = text.substring(first,first+2); 
 			return tok.equals("/*");
 		}
@@ -89,6 +105,16 @@ public class Token {
 			last=search(last,"*/");
 			return text.substring(first,last+2);
 		}
+	}
+	public class Unknown extends TokType{
+		boolean yours(String text, int first){ return true; }
+		String token(String text, int first) {
+			System.err.println("Unknown: "+text.substring(first,len-1));
+			System.err.println("  cursor: "+cursor+", exiting");
+			System.exit(1);
+			return null;
+		}
+			
 	}
 //handy tool for inner classes
 	int search(int from, String end){
