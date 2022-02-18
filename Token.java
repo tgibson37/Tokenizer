@@ -1,4 +1,6 @@
 import java.util.*;
+import java.io.*;
+
 public class Token {
 	static boolean asfound = false;
 	static boolean trace   = false;
@@ -50,23 +52,47 @@ public class Token {
 		return tokens;
 	}
 	private static void usage(){
-		System.out.println("java Token [?ft] (help, as found, trace)");
+		System.out.println("Usage: java Token file [?ft] (help, as found, trace)");
 		System.exit(0);
 	}
 	public static void main(String args[]){
-		if(args.length>0){
-			if(args[0].indexOf('?')>=0){usage();System.exit(0);}
-			if(args[0].indexOf('f')>=0)asfound=true;
-			if(args[0].indexOf('t')>=0)trace=true;
+		String dothis = "";
+		if(args.length>1){
+			if(args[1].indexOf('?')>=0){usage();System.exit(0);}
+			if(args[1].indexOf('f')>=0)asfound=true;
+			if(args[1].indexOf('t')>=0)trace=true;
 		}
-//		String dothis = "  foo 30  bar X17  More >= /* foo bar */  vudo some  ";
-//		String dothis = "  foo 30  bar X17  More  // foo bar   vudo some  ";
-//		String dothis = "    // foo bar   vudo some  ";
+		if(args.length>0){
+			try {
+			  File myObj = new File( args[0] );
+			  Scanner myReader = new Scanner(myObj);
+			  while (myReader.hasNextLine()) {
+				dothis += myReader.nextLine()+"\n";
+			  }
+			  myReader.close();
+//System.out.println("~73\n"+dothis);
+//System.exit(0);
+			} catch (FileNotFoundException e) {
+			  System.out.println("Input file not found: "+args[0]);
+			  System.exit(1);
+			}
+		}
+		else {usage();System.exit(0);}
+		
+
+
+
+/*		
+		String dothis = "  foo 30  bar X17  More >= /* foo bar vudo some  ";
+		String dothis = "  foo 30  bar X17  More  // foo bar   vudo some  ";
+		String dothis = "    // foo bar   vudo some  ";
 		String dothis = "  <= >= != == > <  ";
 		//               012345678901234567890123456789
 		System.out.println("@"+dothis+"@");
 		System.out.println(" 01234567890123456789012345678901234567890123456789");
 		System.out.println("             1         2         3         4");
+*/
+
 		Token t = new Token(dothis);
 		List<String> tokens = t.tokenize();
 		int toklen = tokens.size();
@@ -88,10 +114,10 @@ public class Token {
 	int search(int from, String end){
 		int eln = end.length();
 		while(from+eln < len){
-			if(end.equals(line.substring(from,from+eln)))break;
+			if(end.equals(line.substring(from,from+eln)))return from+eln-1;
 			++from;
 		}
-		return from+eln-1;
+		return -1;
 	}
 
 /* 
@@ -132,14 +158,33 @@ QUICKY STARTER...(but see Prototype, below, for more details)
 	}
 
 	public class Comment1 extends TokType{
+		int last;
 		boolean yours(String text, int first){
 			if(first+1 >= len)return false;
 			String tok = text.substring(first,first+2); 
-			return tok.equals("/*");
+			if(tok.equals("/*")){
+//				last = search(last+2,"*/");  // C style
+//				if(last==-1)return false;    // C style
+				last = search(first,"\n");   // tc
+				return true;
+			}
+			return false;
+		}
+		String token(String text, int first) {
+			if(last >= len)last = len-1;
+//System.err.println("~175 first,last,len= "+first+" "+last+" "+len);
+			return text.substring(first,last);
+		}
+	}
+	public class Comment2 extends TokType{     // C++ one line style
+		boolean yours(String text, int first){
+			if(first+1 >= len)return false;
+			String tok = text.substring(first,first+2); 
+			return tok.equals("//");
 		}
 		String token(String text, int first) {
 			int last=first+2;  // 2 chars matched so far
-			last=search(last,"*/");
+			last=search(last,"\n");
 			return text.substring(first,last+1);
 		}
 	}
@@ -184,3 +229,4 @@ AND: visit line 12 and add to types list. Order may be important.
 */
 }
 //System.err.print(" ~23 "+cursor+" "+line.substring(cursor,len));
+//System.err.println("~163 "+text.substring(first,first+9));
