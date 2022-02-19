@@ -12,11 +12,12 @@ public class Token {
 	private ArrayList<TokType> types = new ArrayList<TokType>();
 
 	public Token(String line){
-//a better way: Class.getClasses() returns array of public inner classes
 		types.add(new Number());
+		types.add(new Decl());
 		types.add(new Symbol());
 		types.add(new Comment1());
 		types.add(new Relation());
+		types.add(new Block());
 		types.add(new Unknown());
 		this.line = line;
 		len = line.length();
@@ -44,7 +45,9 @@ public class Token {
 					tok=tt.token(line,cursor);
 					cursor += tok.length();
 					tokens.add(tok);
-					if(asfound)System.out.println("Found ."+tok+".");
+					String type = tt.getClass().getName();
+					type = type.substring(6,type.length());
+					if(asfound)System.out.println(type+": Found ."+tok+".");
 					break;
 				}
 			}
@@ -78,11 +81,7 @@ public class Token {
 			}
 		}
 		else {usage();System.exit(0);}
-		
-
-
-
-/*		
+/*  old test strings. Using testfile now.		
 		String dothis = "  foo 30  bar X17  More >= /* foo bar vudo some  ";
 		String dothis = "  foo 30  bar X17  More  // foo bar   vudo some  ";
 		String dothis = "    // foo bar   vudo some  ";
@@ -92,7 +91,6 @@ public class Token {
 		System.out.println(" 01234567890123456789012345678901234567890123456789");
 		System.out.println("             1         2         3         4");
 */
-
 		Token t = new Token(dothis);
 		List<String> tokens = t.tokenize();
 		int toklen = tokens.size();
@@ -105,6 +103,25 @@ public class Token {
 		abstract String token(String text, int first);
 	}
 //handy tools for token types
+	char getBalanceChar(String text, int from){
+		char x = text.charAt(from);
+		if(x=='['){ return ']'; }
+		if(x=='('){ return ')'; }
+		if(x=='{'){ return '}'; }
+		if(x=='<'){ return '>'; }
+		return 0;   // x is not a balanced matchable
+	}
+	int balancedAt(String text, int from, char bchar, char echar){
+			int depth = 1;
+			int last = from+1;
+			while( last<=len-1 && depth>0 ){
+				if(text.charAt(last)==bchar)++depth;
+				if(text.charAt(last)==echar)--depth;
+				++last;
+			}
+			if(depth==0)return last;
+			return -1;
+	}
 	int isOf(String text, int first, String[] sa){
 		for(int i=0; i<sa.length; ++i){
 			if(text.startsWith(sa[i],first))return i;
@@ -210,11 +227,48 @@ QUICKY STARTER...(but see Prototype, below, for more details)
 		}
 			
 	}
-/*
+	public class Block extends TokType{
+		int last;
+		boolean yours(String text, int first){
+			if( text.charAt(first)=='[' ){
+				last = balancedAt(text,first, '[', ']' );
+				if(last<0 ) return false;
+				return true;
+			}
+			return false;
+		}
+		String token(String text, int first) {
+			return text.substring(first,last);
+		}
+	}
+	public class Decl extends TokType{
+		int last;
+		boolean yours(String text, int first){
+			int space = len-first;
+//System.err.println("248 space,first,last="+space+" "+first+" "+last);
+			if(space>=3 && 
+				text.substring(first,last=first+3).equals("int"))return true;
+			else if(space>=4 && 
+				text.substring(first,last=first+4).equals("char"))return true;
+			else return false;
+		}
+		String token(String text, int first) {
+			while(isWhite())++last;
+			if(text.charAt(last)=='('){
+				last = balancedAt(text,last,'(',')');
+				if(last<0){
+					System.err.println("Err: Unbalanced (\n");
+					return "(";
+				}
+			}
+			return text.substring(first,last);
+		}
+	}
+/*  paste here
 PROTOTYPE (These are inner classes):
 	public class <tokname> extends TokType{
 		boolean yours(String text, int first){
-			boolean yesno = <test>;
+			boolean yesno = <test code>;
 			return yesno;
 		}
 		String token(String text, int first) {
