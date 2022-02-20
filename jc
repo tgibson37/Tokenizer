@@ -1,0 +1,7 @@
+#!/bin/sh
+clear
+javac -d cls Token.java 2> errs
+head errs -n 30
+
+#Remember: 2>> for multiple compiles
+#And 2> for single

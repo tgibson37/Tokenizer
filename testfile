@@ -1,0 +1,12 @@
+/* A short tc program
+main [
+	pstring "foo"
+	pspace
+	pstrings "foo", "bar"
+]
+pstrings char(0) s, t [
+	ps s
+	ps t
+]
+pint int x [ pn x ]
+pspace [ ps " " ]

@@ -1,0 +1,29 @@
+About this project...
+CONTENTS and USAGE
+	Shell Scripts (Linux, reading them is recommended)
+jc		No args, ./jc compiles putting class files into ./cls, which
+			must exist.
+		Shows first 30 lines of errors.
+run		No args, ./run parses the testfile, provided. Dash options
+		t for trace, f for found which prints tokens as they are found.
+			grep the source for 'trace'. These are debugging aids, 
+			to see where it bombs.
+testfile	My most recent.
+
+
+GOAL
+I am doing this project just for fun.
+
+My vintage 1977 tiny-c code read in the dot-tc file and parsed the text
+repeatedly as the program ran. An alternative is a parse tree which
+makes for much simpler and more efficient processing, whether compiling
+or interpreting. For now I plan to parse all tokens into one
+ArrayList<String>.    
+
+Eventually it may become ArrayList<Token> with Token objects carrying a
+bit of data about the token. For example instead of [,] as indiviual
+tokens maybe do Block with the whole block including the brackets as the
+token. And Block.getText() returns the inside text which itself can be
+tokenized, and that List pointed to, replace the block content String.
+Applied recursively it transforms the top level ArrayList to a parse tree.
+
