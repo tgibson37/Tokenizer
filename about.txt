@@ -1,6 +1,7 @@
 About this project...
+
 CONTENTS and USAGE
-	Shell Scripts (Linux, reading them is recommended)
+	Shell Scripts & files (Linux, reading them is recommended)
 jc		No args, ./jc compiles putting class files into ./cls, which
 			must exist.
 		Shows first 30 lines of errors.
@@ -8,8 +9,8 @@ run		No args, ./run parses the testfile, provided. Dash options
 		t for trace, f for found which prints tokens as they are found.
 			grep the source for 'trace'. These are debugging aids, 
 			to see where it bombs.
-testfile	My most recent.
-
+testfile	My most recent
+about		This file
 
 GOAL
 I am doing this project just for fun.
