@@ -22,10 +22,6 @@ public class Token {
 		this.line = line;
 		len = line.length();
 	}
-	private boolean isWhite() {
-		if(cursor>=len)return false;
-		return Character.isWhitespace(line.charAt(cursor));
-	}
 	public List<String> tokenize() {
 		cursor=0;
 		String tok;
@@ -33,7 +29,7 @@ public class Token {
 		while(cursor<len-1){
 			if(trace)System.err.println("~29 "+cursor);
 			Iterator<TokType> typit = types.iterator();
-			while(cursor<len-1 && isWhite())++cursor;
+			while(cursor<len-1 && isWhite(cursor))++cursor;
 			if(cursor>=len-1){
 				if(trace||asfound)System.out.println("Done");
 				break;
@@ -95,14 +91,19 @@ public class Token {
 		List<String> tokens = t.tokenize();
 		int toklen = tokens.size();
 		System.out.println(toklen+" tokens...");
-		for(int i=0; i<toklen; ++i) System.out.println(tokens.get(i));
+		for(int i=0; i<toklen; ++i) 
+				System.out.println(i +": "+tokens.get(i));
 	}
-// base class for all tokens
+// BASE CLASS for all tokens
 	private abstract class TokType{
 		abstract boolean yours(String text, int first);
 		abstract String token(String text, int first);
 	}
-//handy tools for token types
+//HANDY TOOLS for token types
+	private boolean isWhite(int where) {
+		if(where>=len)return false;
+		return Character.isWhitespace(line.charAt(where));
+	}
 	char getBalanceChar(String text, int from){
 		char x = text.charAt(from);
 		if(x=='['){ return ']'; }
@@ -136,8 +137,28 @@ public class Token {
 		}
 		return -1;
 	}
-
+	int isSym(String text, int from){
+		if(Character.isLetter(text.charAt(from))) {
+			while(from<=len 
+					&& Character.isLetterOrDigit(text.charAt(from)))++from;
+		}
+		return from;
+	}
+	int isSymList(String text, int from){
+		from = isSym(text,from);
+		while(from<=len){
+			while(from<=len && isWhite(from))++from;
+			from = isSym(text,from);
+			while(isWhite(from))++from;
+			if( text.charAt(from) != ',' )break;
+			else ++from;
+		}
+		return from;
+	}
 /* 
+System.err.print("~141 ");
+System.err.print("~142 from="+from);
+
 QUICKY STARTER...(but see Prototype, below, for more details)
 	public class . extends TokType{
 		boolean yours(String text, int first){
@@ -245,7 +266,6 @@ QUICKY STARTER...(but see Prototype, below, for more details)
 		int last;
 		boolean yours(String text, int first){
 			int space = len-first;
-//System.err.println("248 space,first,last="+space+" "+first+" "+last);
 			if(space>=3 && 
 				text.substring(first,last=first+3).equals("int"))return true;
 			else if(space>=4 && 
@@ -253,13 +273,19 @@ QUICKY STARTER...(but see Prototype, below, for more details)
 			else return false;
 		}
 		String token(String text, int first) {
-			while(isWhite())++last;
+			char c;
+			while(isWhite(last))++last;
 			if(text.charAt(last)=='('){
 				last = balancedAt(text,last,'(',')');
 				if(last<0){
 					System.err.println("Err: Unbalanced (\n");
 					return "(";
 				}
+			}
+			while(isWhite(last))++last;
+			c = text.charAt(last);
+			if(Character.isLetter(c)){
+				last = isSymList(text,last);
 			}
 			return text.substring(first,last);
 		}
