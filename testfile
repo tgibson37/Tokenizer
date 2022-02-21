@@ -2,11 +2,9 @@
 main [
 	pstring "foo"
 	pspace
-	pstrings "foo", "bar"
+	pstring "bar"
 ]
-pstrings char(0) s, t [
+pstring char s(0) [
 	ps s
-	ps t
 ]
-pint int x [ pn x ]
-pspace [ ps " " ]
+pnum int x [ ps x ]

@@ -25,6 +25,5 @@ Eventually it may become ArrayList<Token> with Token objects carrying a
 bit of data about the token. For example instead of [,] as indiviual
 tokens maybe do Block with the whole block including the brackets as the
 token. And Block.getText() returns the inside text which itself can be
-tokenized, and that List pointed to, replace the block content String.
+tokenized, and that List pointed to replacing the block content String.
 Applied recursively it transforms the top level ArrayList to a parse tree.
-

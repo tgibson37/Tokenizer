@@ -69,24 +69,12 @@ public class Token {
 				dothis += myReader.nextLine()+"\n";
 			  }
 			  myReader.close();
-//System.out.println("~73\n"+dothis);
-//System.exit(0);
 			} catch (FileNotFoundException e) {
 			  System.out.println("Input file not found: "+args[0]);
 			  System.exit(1);
 			}
 		}
 		else {usage();System.exit(0);}
-/*  old test strings. Using testfile now.		
-		String dothis = "  foo 30  bar X17  More >= /* foo bar vudo some  ";
-		String dothis = "  foo 30  bar X17  More  // foo bar   vudo some  ";
-		String dothis = "    // foo bar   vudo some  ";
-		String dothis = "  <= >= != == > <  ";
-		//               012345678901234567890123456789
-		System.out.println("@"+dothis+"@");
-		System.out.println(" 01234567890123456789012345678901234567890123456789");
-		System.out.println("             1         2         3         4");
-*/
 		Token t = new Token(dothis);
 		List<String> tokens = t.tokenize();
 		int toklen = tokens.size();
@@ -141,6 +129,11 @@ public class Token {
 		if(Character.isLetter(text.charAt(from))) {
 			while(from<=len 
 					&& Character.isLetterOrDigit(text.charAt(from)))++from;
+		}
+		while(isWhite(from))++from;
+		if(text.charAt(from)=='('){
+				int last = balancedAt(text,from,'(',')');
+				if(last>=0) from = last;
 		}
 		return from;
 	}
@@ -201,8 +194,8 @@ QUICKY STARTER...(but see Prototype, below, for more details)
 			if(first+1 >= len)return false;
 			String tok = text.substring(first,first+2); 
 			if(tok.equals("/*")){
-//				last = search(last+2,"*/");  // C style
-//				if(last==-1)return false;    // C style
+//				last = search(last+2,"*/");  // C style  KEEP THESE
+//				if(last==-1)return false;    // C style    LINES
 				last = search(first,"\n");   // tc
 				return true;
 			}
@@ -210,7 +203,6 @@ QUICKY STARTER...(but see Prototype, below, for more details)
 		}
 		String token(String text, int first) {
 			if(last >= len)last = len-1;
-//System.err.println("~175 first,last,len= "+first+" "+last+" "+len);
 			return text.substring(first,last);
 		}
 	}
@@ -274,14 +266,6 @@ QUICKY STARTER...(but see Prototype, below, for more details)
 		}
 		String token(String text, int first) {
 			char c;
-			while(isWhite(last))++last;
-			if(text.charAt(last)=='('){
-				last = balancedAt(text,last,'(',')');
-				if(last<0){
-					System.err.println("Err: Unbalanced (\n");
-					return "(";
-				}
-			}
 			while(isWhite(last))++last;
 			c = text.charAt(last);
 			if(Character.isLetter(c)){
